@@ -13,6 +13,7 @@ namespace GeneticAlgorithm
         private ulong population = 0;
         private int mutationRate;
         private Func<BitArray, double> evaluationFn;
+        private Comparison<Genom> compareFn;
 
         public ulong Population
         {
@@ -26,20 +27,25 @@ namespace GeneticAlgorithm
         {
             this.mutationRate = mutationRate;
             this.evaluationFn = evaluationFn;
+            this.compareFn = (Genom x, Genom y) => {
+                return x.Evaluation > y.Evaluation ? 1 : (x.Evaluation == y.Evaluation ? 0 : -1);
+            };
             for(int i = 0; i < populationSize; i++)
             {
-                genoms.Add(new Genom(genomSize, true));
+                genoms.Add(new Genom(genomSize, evaluationFn, true));
             }
         }
 
         void Breed()
         {
             List<Genom> newPopulation = new List<Genom>();
-            Genom parentA = genoms.ElementAt(0);
-            Genom parentB = genoms.ElementAt(1);
-            for(int i = 0; i < genoms.Count; i++)
+            Random randomGenerator = new Random();
+            genoms.Sort(this.compareFn);
+            while (newPopulation.Count != genoms.Count)
             {
-                newPopulation.Add(parentB.Crossover(parentA.Mutate(this.mutationRate)));
+                Genom parentA = genoms.ElementAt(0);
+                Genom parentB = genoms.ElementAt(1);
+                newPopulation.Add(parentB.Crossover(parentA.Mutate(mutationRate)));
             }
             genoms = newPopulation;
         }
@@ -54,12 +60,6 @@ namespace GeneticAlgorithm
         void Evolve()
         {
             population++;
-            genoms.Sort((Genom gA, Genom gB) =>
-            {
-                double gAEval = gA.Evaluate(evaluationFn);
-                double gBEval = gB.Evaluate(evaluationFn);
-                return gAEval == gBEval ? 0 : (gAEval > gBEval ? 1 : -1);
-            });
             Breed();
         }
 

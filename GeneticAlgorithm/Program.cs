@@ -35,9 +35,9 @@ namespace GeneticAlgorithm
                 sum = 0;
                 for(int x = 0; x < 3; x++)
                 {
-                    sum += arr[Index(x, y, 3)] % 9 + 1;
+                    sum += (arr[Index(x, y, 3)] & 0xF0) % 9 + 1;
                 }
-                err += Math.Abs(15 - sum);
+                err += (15 - sum);
             }
 
             /**
@@ -58,9 +58,9 @@ namespace GeneticAlgorithm
                 sum = 0;
                 for(int y = 0; y < 3; y++)
                 {
-                    sum += arr[Index(x, y, 3)] % 9 + 1;
+                    sum += (arr[Index(x, y, 3)] & 0xF0) % 9 + 1;
                 }
-                err += Math.Abs(15 - sum);
+                err += (15 - sum);
             }
             /**
              *       /
@@ -73,11 +73,10 @@ namespace GeneticAlgorithm
             int py = 0;
             do
             {
-                sum += arr[Index(px, py, 3)] % 9 + 1;
-                px += 1;
+                sum += (arr[Index(px, py, 3)] & 0xF0) % 9 + 1;
                 py += 1;
             } while (px != 3 && py != 3);
-            err += Math.Abs(15 - sum);
+            err += (15 - sum);
             /**
              *  \    
              *   ###
@@ -90,12 +89,12 @@ namespace GeneticAlgorithm
             sum = 0;
             do
             {
-                sum += arr[Index(px, py, 3)] % 9 + 1;
+                sum += (arr[Index(px, py, 3)] & 0xF0) % 9 + 1;
                 px -= 1;
                 py += 1;
             } while (px != -1 && py != 3);
-            err += Math.Abs(15 - sum);
-            return err / 120.0;
+            err += (15 - sum);
+            return 1.0 - err / 120.0;
         }
 
         static void PrintMatrix(byte[] matrix)
@@ -112,17 +111,13 @@ namespace GeneticAlgorithm
 
         static void Main(string[] args)
         {
-            GeneticAlgorithm algorithm = new GeneticAlgorithm(10, 8 * 3 * 3, 25, Evaluator);
+            GeneticAlgorithm algorithm = new GeneticAlgorithm(10, 8 * 3 * 3, 5, Evaluator);
             foreach(List<Genom> genoms in algorithm)
             {
                 Genom best = genoms.First();
                 byte[] byteArr = new byte[9];
                 best.Representation.CopyTo(byteArr, 0);
-                double evaluation = best.Evaluate(Evaluator);
-                Console.WriteLine("Populace " + algorithm.Population);
-                Console.WriteLine("Nejlepší genom s evaluací: " + evaluation);
-                PrintMatrix(byteArr);
-                if(evaluation == 0.0)
+                if(best.Evaluation == 1.0)
                 {
                     break;
                 }
